@@ -1,3 +1,8 @@
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+
 import pyotp
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout, authenticate, login
@@ -57,3 +62,50 @@ def otp_view(request):
 def logout_view(request):
     logout(request)
     return redirect('core:login-view')
+
+
+@api_view(['POST'])
+def generate_and_send_otp(request):
+    email = request.data.get('email')
+
+    if not email:
+        return Response({'error': 'Email is required'})
+
+    # Generate 6-digit OTP
+    otp_code = get_random_string(length=6, allowed_chars='1234567890')
+
+    # Store OTP in the session
+    request.session['otp_code'] = otp_code
+    request.session['email'] = email
+
+    # Send OTP via email
+    send_mail(
+        'Your OTP Code',
+        f'Your OTP code is: {otp_code}',
+        'test@example.com',
+        [email],
+        fail_silently=False,
+    )
+
+    return Response({'message': 'OTP sent successfully'})
+
+
+@api_view(['POST'])
+def verify_otp(request):
+    email = request.data.get('email')
+    otp_code = request.data.get('otp_code')
+
+    if not email or not otp_code:
+        return Response({'error': 'Email and OTP code are required'})
+
+    # Retrieve OTP from the session
+    stored_otp = request.session.get('otp_code')
+    stored_email = request.session.get('email')
+
+    if stored_otp and stored_email == email and stored_otp == otp_code:
+        # Clear the OTP from the session after successful verification
+        request.session.pop('otp_code')
+        request.session.pop('email')
+        return Response({'message': 'OTP verified successfully'})
+    else:
+        return Response({'error': 'Invalid OTP'})
