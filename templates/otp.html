@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    OTP
+{% endblock title %}
+
+{% block content %}
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="formGroupExampleInput">OTP:</label>
+            <input type="text" name="otp" class="form-control" id="formGroupExampleInput" placeholder="OTP">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock content %}

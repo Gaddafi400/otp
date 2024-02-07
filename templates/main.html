@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Home
+{% endblock title %}
+{% block content %}
+    <h3 class="text mb-3">Home Page</h3>
+    <a href="{% url 'core:logout-view' %}" class="btn btn-danger">logout</a>
+{% endblock content %}
+
